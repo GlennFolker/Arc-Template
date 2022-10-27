@@ -1,0 +1,10 @@
+if(JavaVersion.current().ordinal() < JavaVersion.VERSION_17.ordinal()){
+    throw new GradleException(
+        "JDK 17 is a required minimum version. Yours: ${System.getProperty('java.version')}\n" +
+        "You should always compile/run from your native terminal (cmd, bash, etc.), instead of using your IDE.\n" +
+        "If this error still persists, double-check if you have Java 17 installed, and your PATH variable points to the correct installation."
+    )
+}
+
+include ':core'
+include ':desktop'
