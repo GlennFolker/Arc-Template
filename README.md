@@ -19,6 +19,7 @@ The project is divided into 2 modules:
 2. Refactor. Point of Interests:
     - [`appName` variable in `gradle.properties`](https://github.com/GlennFolker/Arc-Template/blob/master/gradle.properties#L2).
     - [The window title in `DesktopApp`](https://github.com/GlennFolker/Arc-Template/blob/master/desktop/src/tmp/desktop/DesktopApp.java#L14).
+    - [The license's year and licensee](https://github.com/GlennFolker/Arc-Template/blob/master/LICENSE#L3).
     - Other non-specific ones.
 3. Compile and test (currently only desktop testing is available):
     - Run `gradlew desktop:run` to run the application.
