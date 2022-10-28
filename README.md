@@ -16,7 +16,7 @@ The project is divided into 2 modules:
 
 ## Using this Template
 1. Click that big green `Use this template` button to copy this template as your repository.
-2. Refactor. Point of Interests:
+2. Refactor. Point of interests:
     - [`appName` variable in `gradle.properties`](https://github.com/GlennFolker/Arc-Template/blob/master/gradle.properties#L2).
     - [The window title in `DesktopApp`](https://github.com/GlennFolker/Arc-Template/blob/master/desktop/src/tmp/desktop/DesktopApp.java#L14).
     - [The license's year and licensee](https://github.com/GlennFolker/Arc-Template/blob/master/LICENSE#L3).
