@@ -1,3 +1,129 @@
-plugins{
-    id 'java'
+buildscript{
+    dependencies{
+        classpath "com.github.Anuken.Arc:arc-core:$arcVersion"
+        classpath "com.github.Anuken.Arc:packer:$arcVersion"
+    }
+
+    repositories{
+        mavenCentral()
+        maven{url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+        maven{url 'https://oss.sonatype.org/content/repositories/releases/'}
+        maven{url 'https://jitpack.io'}
+    }
+}
+
+import arc.packer.*
+
+subprojects{
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    sourceSets.main.java.srcDirs = ['src/']
+
+    repositories{
+        mavenCentral()
+        maven{url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+        maven{url 'https://oss.sonatype.org/content/repositories/releases/'}
+        maven{url 'https://jitpack.io'}
+    }
+
+    ext{
+        compilerVersion = JavaVersion.current().ordinal() - JavaVersion.VERSION_17.ordinal() + 17
+
+        assetsDir = "${project(':core').projectDir}/assets/"
+        assetsRawDir = "${project(':core').projectDir}/assets-raw/"
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes){
+        archiveClassifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts{
+        archives sourcesJar
+    }
+
+    java{
+        withJavadocJar()
+        withSourcesJar()
+
+        toolchain{
+            languageVersion = JavaLanguageVersion.of(compilerVersion)
+        }
+    }
+
+    publishing{
+        publications{
+            maven(MavenPublication){
+                from components.java
+            }
+        }
+    }
+
+    javadoc{
+        options.encoding = 'UTF-8'
+    }
+
+    sourceCompatibility = compilerVersion
+    tasks.withType(JavaCompile){
+        sourceCompatibility = compilerVersion
+        options.release = 8
+
+        options.incremental = true
+        options.encoding = 'UTF-8'
+    }
+}
+
+project(':core'){
+    dependencies{
+        api "com.github.Anuken.Arc:arc-core:$arcVersion"
+    }
+
+    task pack{
+        doFirst{
+            delete{
+                delete "$assetsDir/sprites/"
+            }
+
+            TexturePacker.process(file("$assetsRawDir/sprites/").absolutePath, file("$assetsDir/sprites/").absolutePath, 'sprites')
+        }
+    }
+}
+
+project(':desktop'){
+    def mainClassName = 'tmp.desktop.DesktopApp'
+
+    dependencies{
+        implementation project(':core')
+        implementation "com.github.Anuken.Arc:natives-desktop:$arcVersion"
+        implementation "com.github.Anuken.Arc:backend-sdl:$arcVersion"
+    }
+
+    task run(type: JavaExec, dependsOn: [classes, configurations.runtimeClasspath]){
+        mainClass = mainClassName
+        classpath = sourceSets.main.runtimeClasspath
+        standardInput = System.in
+        workingDir = assetsDir
+        ignoreExitValue = true
+    }
+
+    task dist(type: Jar, dependsOn: [configurations.runtimeClasspath]){
+        archiveFileName = "${appName}.jar"
+
+        from files(sourceSets.main.output.classesDirs)
+        from files(sourceSets.main.output.resourcesDir)
+        from configurations.runtimeClasspath.collect{it.isDirectory() ? it : zipTree(it)}
+
+        from files(assetsDir)
+
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        manifest{
+            attributes 'Main-Class': mainClassName
+        }
+    }
+
+    if(!file("$assetsDir/sprites/").exists()){
+        run.dependsOn ':core:pack'
+        dist.dependsOn ':core:pack'
+    }
 }
